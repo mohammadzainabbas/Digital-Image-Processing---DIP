@@ -1,11 +1,33 @@
-import numpy, cv2
+import numpy as np, cv2 as cv
 
-img = numpy.zeros([500,500,3])
+def Check_Value(value, epsilon, seed):
+    return seed if (abs(value - seed) <= epsilon) else 0
 
-img[:,:,0] = numpy.ones([500,500])*180/255.0        #Blue
-#img[:,:,1] = numpy.ones([500,500])*128/255.0       #Green
-#img[:,:,2] = numpy.ones([500,500])*192/255.0       #Red
+def Region_Growing(img, seed = 249, epsilon = 5):
 
-cv2.imwrite('color_img.jpg', img)
-cv2.imshow("image", img);
-cv2.waitKey();
+    r,c=np.shape(img)
+
+    new_img = np.copy(img)
+
+    while(1):
+        for i in range(r):
+            for j in range(c):
+                img[img == Check_Value(img, epsilon = 5, seed = 249)] = 249
+
+        if (abs(new_img - img) == 0):
+            break;
+        else:
+            new_img = img  
+        
+    return img
+    
+
+img = np.array(cv.imread('Fig01.tif',0),dtype=np.uint8)
+
+Segmentated_img = Region_Growing(img, seed = 249, epsilon = 5)
+
+cv.imshow('Segmentated Image via Region Growing', Segmentated_img)
+cv.waitKey(10000)
+cv.destroyAllWindows()
+cv.imwrite('Segmentated Image via Region Growing.png', Segmentated_img)
+
