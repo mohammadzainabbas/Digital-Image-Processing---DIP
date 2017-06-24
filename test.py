@@ -1,91 +1,107 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Mar 18 11:36:24 2017
+import numpy as np
+#Method 1
 
-@author: GMD
-"""
+from math import floor
+lists = [[  2,  3,  5,  9, 10]
+       ,[  8,  7,  1, 11, 13]
+       ,[  0,  4,  6, 21, 22]
+       ,[ 12, 19, 17, 18, 25]
+      , [ 14, 15, 16, 23, 24]]
+
+n = len(lists) # assume each list also has n-length
+arr = np.array(lists)
+print('Input: \n', arr)
+output_list = []
+
+idx = 0
+while idx <= floor(n/2):
+
+    if len(output_list) == n*n:
+        break
+
+    # across ->
+    #print("Across ->")
+    for item in lists[idx][idx:n-idx]:
+        output_list.append(item)
+    #print(output_list)
+
+    if len(output_list) == n*n:
+        break
+
+    # down
+    #print("Down")
+    for _idx in range(idx+1, n-idx-1):
+        output_list.append(lists[_idx][n-idx-1])
+    #print(output_list)
+
+    if len(output_list) == n*n:
+        break
+
+    # across <-
+    #print("Across <-")
+    for _idx in range(n-idx-1, idx-1, -1):
+        output_list.append(lists[n-idx-1][_idx])
+    #print(output_list)
+
+    if len(output_list) == n*n:
+        break
+
+    # up
+    #print("Up")
+    for _idx in range(n-idx-2, idx, -1):
+        output_list.append(lists[_idx][idx])
+    #print(output_list)
+
+    idx += 1
 
 
-def DefineLabel(left,upper,lftdiag=0,rghtdiag=0):    
-    if(left!=0):
-        return left
-    elif(lftdiag!=0):
-        return lftdiag
-    elif(upper!=0):
-        return upper
-    elif(rghtdiag!=0):
-        return rghtdiag
-    return 0
-def ObjectClassification(img,connectivity=4):
-    import numpy as n
-    size=n.shape(img)
-    named=n.zeros(size,dtype=n.int)
-    
-    list_objects=[]
-    newlabel=1
-    
-    for i in range(1,size[0]):
-        for j in range(1,size[1]):
-            if (img[i,j]==255):
-                thislabel=0
-                if(connectivity==8):
-                    thislabel=DefineLabel(named[i,j-1],named[i-1,j],named[i-1,j-1],named[i-1,j+1])
-                else:
-                    thislabel=DefineLabel(left=named[i,j-1],upper=named[i-1,j])
-                if(thislabel==0):
-                    thislabel=newlabel
-                    list_objects.append([thislabel])
-                    newlabel=newlabel+1
-                named[i,j]=thislabel
-                populateList(thislabel,named[i-1,j],named[i,j-1],list_objects)
-    sortLList(list_objects)
-    return (named,list_objects)
+print("Output:")
+print('\nMethod 1:\n',output_list)
 
-def populateList(LBL_curr,LBL_left,LBL_upper,list_objects):
-    if(LBL_upper!=0 and LBL_left!=0 and LBL_upper!=LBL_left):
-        upperindex=findindex(list_objects,LBL_upper)
-        leftindex=findindex(list_objects,LBL_left)
-        if(upperindex!=leftindex):
-            listinlistcopy(list_objects,upperindex,leftindex)
-    
-     
-def listinlistcopy(lista,dstloc,srcloc):
-    while(lista[srcloc].__len__()>0):
-        lista[dstloc].append(lista[srcloc].pop())
-    lista.__delitem__(srcloc)
-    
-def findindex(lista,value):
-    r=-1
-    for k in range(lista.__len__()):
-        if(lista[k].count(value)>0):
-            r=k
-            break
-    return r
-def sortLList(llists):
-    for k in range(1,llists.__len__()):
-        llists[k].sort()
 
-def AssignMinLabel(labeledimg,list_objects):
-    import numpy as n
-    size=n.shape(labeledimg)
-    newimg=n.zeros((size),dtype=n.uint8)
-    for i in range(0,size[0]):
-        for j in range(0,size[1]):
-            if(labeledimg[i,j]!=0):
-                newimg[i,j]=(findindex(list_objects,labeledimg[i,j])+1)*40
-    return newimg
+#Method 2
+import itertools
+def transpose_and_yield_top(arr):
+    while arr:
+        yield arr[0]
+        arr = list(zip(*arr[1:]))[::-1]
+    return arr
+arr = [[2,  3,  5,  9, 10],
+       [8,  7,  1, 11, 13],
+       [0,  4,  6, 21, 22],
+       [12, 19, 17, 18, 25],
+       [14, 15, 16, 23, 24]]
+rotated = list(itertools.chain(*transpose_and_yield_top(arr)))
+print('\nMethod 2:\n',rotated)
 
-def LabelDetectSegment(img,connectivity=8):
-    n1,l1=ObjectClassification(img,connectivity)
-    res=AssignMinLabel(n1,l1)
-    return res,l1
-    
-import cv2 as c
-img=c.imread('cc.png',0)
-c.imshow('img',img)
-c.waitKey(0)
-img_objects,l1=LabelDetectSegment(img,connectivity=8)
-c.imshow('img',img_objects)
-c.waitKey(0)
-c.destroyAllWindows()
-print(len(l1))
+
+#Method 3
+
+def clockwise(input_list, output_list):
+    list_size = len(input_list[0])
+    if list_size == 1:
+        output_list.append(input_list[0][0])
+    else:
+        for i in range(list_size):
+            output_list.append(input_list[0][i])
+
+        for i in range(list_size)[1:]:
+            output_list.append(input_list[i][list_size - 1])
+
+        for i in reversed(range(list_size)[:-1]):    
+            output_list.append(input_list[list_size - 1][i])
+
+        for i in reversed(range(list_size)[1:-1]):    
+            output_list.append(input_list[i][0])
+
+        new_list = list()
+        for i in range(list_size - 2):
+            new_list.append(input_list[i + 1][1:-1])
+
+        return clockwise(new_list, output_list)
+
+l = [[2, 3, 5, 9, 10],[ 8, 7, 1, 11, 13],[ 0, 4, 6, 21, 22], [12, 19, 17, 18, 25], [14, 15, 16, 23, 24]]
+output_list = []
+clockwise(l, output_list)
+
+print ('\nMethod 3:\n',output_list)
